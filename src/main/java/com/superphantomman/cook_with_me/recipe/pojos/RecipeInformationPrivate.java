@@ -1,6 +1,8 @@
 package com.superphantomman.cook_with_me.recipe.pojos;
 
 
+import com.superphantomman.cook_with_me.ingredient.pojos.Ingredient;
+import com.superphantomman.cook_with_me.util.MeasurementType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,6 +11,7 @@ import lombok.ToString;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.beans.Transient;
+import java.time.LocalDate;
 
 
 /**
@@ -23,13 +26,16 @@ import java.beans.Transient;
 @ToString
 @Table(name = "recipe_private")
 @NoArgsConstructor
-@Entity(name = "recipe_private")
-public class RecipePrivate extends Recipe {
+@Entity(name = "RecipeInformationPrivate")
+public class RecipeInformationPrivate extends RecipeInformation {
 
 
-    public RecipePrivate(String name, String description) {
-        super(name, description);
+    public RecipeInformationPrivate(String name, LocalDate creationDate) {
+        super(name, creationDate);
     }
+
+
+
     @Transient
     @Override
     public State state() {

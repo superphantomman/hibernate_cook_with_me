@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.time.LocalDate;
 
 
 /**
@@ -20,9 +21,9 @@ import javax.persistence.Transient;
 @Setter
 @ToString
 @NoArgsConstructor
-@Table(name = "recipe_unconfirmed")
-@Entity(name = "recipe_unconfirmed")
-public class RecipeUnconfirmed extends Recipe {
+@Table(name = "recipe_unconfirmed_information")
+@Entity(name = "RecipeInformationUnconfirmed")
+public class RecipeInformationUnconfirmed extends RecipeInformation {
 
     @Transient
     @Override
@@ -30,11 +31,9 @@ public class RecipeUnconfirmed extends Recipe {
         return State.UNCONFIRMED;
     }
 
-    public RecipeUnconfirmed(String name, String description) {
-        super(name, description);
+    public RecipeInformationUnconfirmed(String name, LocalDate creationDate) {
+        super(name, creationDate);
     }
-    public RecipeUnconfirmed(RecipePrivate recipePrivate){
-        super(recipePrivate.getName(), recipePrivate.getDescription());
-    }
+
 
 }

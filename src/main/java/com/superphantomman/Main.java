@@ -1,57 +1,80 @@
 package com.superphantomman;
 
+import com.superphantomman.cook_with_me.ingredient.pojos.Ingredient;
 import com.superphantomman.cook_with_me.ingredient.pojos.IngredientConfirmed;
 import com.superphantomman.cook_with_me.ingredient.pojos.IngredientUnconfirmed;
-import com.superphantomman.cook_with_me.recipe.pojos.RecipeConfirmed;
-import com.superphantomman.cook_with_me.recipe.pojos.RecipePrivate;
-import com.superphantomman.cook_with_me.recipe.pojos.RecipeUnconfirmed;
+import com.superphantomman.cook_with_me.recipe.pojos.*;
 import com.superphantomman.cook_with_me.util.MeasurementType;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.time.LocalDate;
+import java.util.List;
 
 public class Main {
+
+
     final static EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.superphantomman.cook_with_me");
+    final static EntityManager em = emf.createEntityManager();
 
 
     public static void main(String[] args) {
-        var em = emf.createEntityManager();
+//        var
         var t = em.getTransaction();
-        RecipePrivate recipePrivate =
-                new RecipePrivate("sandwich", "under construction");
-        RecipeUnconfirmed recipeUnconfirmed =
-                new RecipeUnconfirmed(new RecipePrivate("chesse", "to publish but not confirmed"));
-        RecipeConfirmed recipeConfirmed =
-                new RecipeConfirmed(new RecipeUnconfirmed("sandwich with fish", "confirmed and to be publish"));
 
+        List<RecipeInformation> rInformations = List.of(
+                new RecipeInformationPrivate("sliced fruit", LocalDate.now()),
+                new RecipeInformationUnconfirmed("sliced fruit unconfirmed", LocalDate.now()),
+                new RecipeInformationConfirmed("sliced fruit confirmed", LocalDate.now())
 
-        IngredientUnconfirmed ingredientUnconfirmed = new IngredientUnconfirmed("apple", 100 , MeasurementType.GRAM);
-        IngredientConfirmed ingredientConfirmed = new IngredientConfirmed("banana", 100, MeasurementType.GRAM);
+        );
+
+        List<Recipe> recipes = List.of(
+                new Recipe("slice fruits"),
+                new Recipe("slice fruits"),
+                new Recipe("slice fruits")
+        );
+
+        List<Ingredient> ingredients = List.of(
+                new IngredientUnconfirmed("apple", 100, MeasurementType.GRAM),
+                new IngredientConfirmed("banana", 100, MeasurementType.GRAM)
+
+        );
+
 
         t.begin();
-        em.persist(ingredientConfirmed);
-        em.persist(ingredientUnconfirmed);
-        em.persist(recipePrivate);
-        em.persist(recipeUnconfirmed);
-        em.persist(recipeConfirmed);
+
+        ingredients.forEach(em::persist);
+        rInformations.forEach(em::persist);
+
         em.flush();
         t.commit();
 
-
+        for (int i = 0; i < rInformations.size(); i++) {
+            rInformations.get(i).setRecipe(recipes.get(i));
+        }
 
         t.begin();
-        recipePrivate.addIngredient(ingredientUnconfirmed, 10f , MeasurementType.GRAM);
-        recipePrivate.addIngredient(ingredientConfirmed, 10f , MeasurementType.GRAM);
-        recipeUnconfirmed.addIngredient(ingredientUnconfirmed, 10f , MeasurementType.GRAM);
-        recipeUnconfirmed.addIngredient(ingredientConfirmed, 10f , MeasurementType.GRAM);
-        recipeConfirmed.addIngredient(ingredientUnconfirmed, 10f , MeasurementType.GRAM);
-        recipeConfirmed.addIngredient(ingredientConfirmed, 10f , MeasurementType.GRAM);
+
+        recipes.forEach(em::persist);
 
         t.commit();
 
 
+        t.begin();
+
+        rInformations.forEach(ri -> {
+            ri.addIngredient(ingredients.get(0), 10f, MeasurementType.GRAM);
+            ri.addIngredient(ingredients.get(1), 10f, MeasurementType.GRAM);
+        });
 
 
+        t.commit();
+
+        t.begin();
+        rInformations.forEach( ri -> ri.removeIngredient(ingredients.get(0)));
+        t.commit();
 
 
         em.close();

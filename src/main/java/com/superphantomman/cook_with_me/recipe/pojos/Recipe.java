@@ -11,20 +11,13 @@ import lombok.ToString;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import static javax.persistence.CascadeType.ALL;
 
-/**
- * Recipe represent general recipe which not include state.
- * id Number that will identify all recipes no matter of state;
- * name String which represent name of recipe given by user
- * description String which represent description given by user
- * creation_date Date of submitting forms by user
- */
+
 
 @Getter
 @Setter
@@ -32,46 +25,42 @@ import static javax.persistence.CascadeType.ALL;
 
 @NoArgsConstructor
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
 
-public abstract class Recipe {
+
+public class Recipe {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
     private Long id;
-
-    @Column(name = "name", nullable = false)
-    private String name;
 
     @Column(name = "description")
     private String description;
 
-    @Column(name = "creation_date")
-    private LocalDate creationDate;
 
+
+    //Being in possession of recipeInformation
+    @OneToOne
+    @JoinColumn(name = "id")
+    @MapsId
+    private RecipeInformation recipeInformation;
 
 
     @ToString.Exclude
     @OneToMany(mappedBy = "id.recipe", cascade = ALL, orphanRemoval = true)
     List<IngredientRecipe> ingredientRecipes = new ArrayList<>(7);
 
-    @Transient
-    public abstract State state();
-
 
     public List<IngredientRecipe> getIngredientRecipes() {
         return new ArrayList<>(ingredientRecipes);
     }
 
-    public boolean addIngredient(Ingredient i, Float weight, MeasurementType measurementType) {
-        if (i == null ||  weight == null || measurementType == null)
+    boolean addIngredient(Ingredient i, Float weight, MeasurementType measurementType) {
+        if (i == null || weight == null || measurementType == null)
             throw new NullPointerException();
-        if(weight.doubleValue() <= 0d)
+        if (weight.doubleValue() <= 0d)
             throw new IllegalArgumentException("Illegal argument for weigh parameter");
 
-        if (i.state() == State.UNCONFIRMED && this.state() == State.CONFIRMED)
+        if (i.state() == State.UNCONFIRMED && recipeInformation.state() == State.CONFIRMED)
             return false;
 
 
@@ -83,7 +72,7 @@ public abstract class Recipe {
     /*
      * Remove first occurrence of element
      * */
-    public boolean removeIngredient(Ingredient i) {
+    boolean removeIngredient(Ingredient i) {
         for (var ir : ingredientRecipes) {
             if (ir.getIngredient().equals(i))
                 return ingredientRecipes.remove(ir);
@@ -91,13 +80,12 @@ public abstract class Recipe {
         return false;
     }
 
-    public boolean addIngredient(IngredientRecipe ir) {
+    boolean addIngredient(IngredientRecipe ir) {
         return ingredientRecipes.add(ir);
 
     }
 
-    public Recipe(String name, String description) {
-        this.name = name;
+    public Recipe(String description) {
         this.description = description;
     }
 
